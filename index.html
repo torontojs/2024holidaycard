@@ -1,0 +1,162 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Holiday Craftiness!</title>
+  <style>
+    body {
+      background: #000;
+    }
+  </style>
+</head>
+
+<body>
+     
+  <svg id="tower" style="display:none" class="cn-tower" viewBox="0 0 200 200" width="200" height="200" xmlns="http://www.w3.org/2000/svg">
+    <circle fill="#9B9BA9" cx="40.112" cy="64.434" r="16.563"></circle>
+    <path fill="#FFF" d="M39.413 40.338c-12.225 0-22.135 9.61-22.135 21.465s9.91 21.464 22.135 21.464 22.136-9.61 22.136-21.464-9.91-21.465-22.136-21.465zm.67 42.393c-10.075 0-18.244-8.169-18.244-18.245 0-10.077 8.169-18.245 18.245-18.245s18.245 8.168 18.245 18.245c0 10.076-8.169 18.245-18.245 18.245z"></path>
+    <path fill="#9B9BA9" d="M28.715 31.154c.552-3.306 3.763-5.523 7.171-4.953a6.305 6.305 0 0 1 4.568 3.29c-.3-2.647-2.373-4.902-5.209-5.376-3.408-.57-6.619 1.648-7.171 4.953a5.91 5.91 0 0 0 .603 3.725 5.887 5.887 0 0 1 .038-1.64z"></path>
+    <path fill="#BCB9CD" d="m33.254 27.654 1.22 5.61-4.147 1.22-.244-3.903z"></path>
+    <path fill="#9B9BA9" d="m33.254 27.654 4.879.976 1.22 4.39-5.164.57z"></path>
+    <path fill="#BCB9CD" d="M16.058 59.77c0-12.508 10.456-22.647 23.355-22.647 10.355 0 19.13 6.537 22.191 15.585-1.439-11.17-11.258-19.813-23.167-19.813-12.898 0-23.355 10.14-23.355 22.647 0 2.467.413 4.839 1.165 7.062a22.149 22.149 0 0 1-.189-2.834z"></path>
+    <path fill="#D3D3E3" d="m33 62.083 25.667 206.084-30.291.56s6.457-186.435 3.577-200.989L33 62.083z"></path>
+    <path fill="#BCB9CD" d="m40.084 56.68-2.277.65-4.878 4.88 24.067 205.866 12.85.286.006.04h18.04z"></path>
+    <path fill="#9B9BA9" d="m40.084 56.68 7.48 3.903s23.741 102.77 57.565 208.469H87.892L40.084 56.68z"></path>
+    <path fill="#FFF" d="m29.372 20.113.366 4.512s.914-.792 2.768-1.219c2.114-.486 3.39.244 3.39.244l-.98-4.268s-.544-1.952-3.349-1.464c-2.424.421-2.195 2.195-2.195 2.195z"></path>
+    <path fill="#FFF" d="M29.536 18.683c.26-.479.81-.99 1.97-1.192 1.376-.24 2.205.109 2.696.525l-.316-1.373s-.438-1.574-2.699-1.18c-1.953.339-1.77 1.768-1.77 1.768l.119 1.452zM30.365 15.436c.11-.203.343-.42.836-.506.584-.102.936.046 1.144.223l-.265-1.665s-.186-.668-1.146-.501c-.829.144-.75.75-.75.75l.18 1.699zM30.134 12.703c.087-.159.269-.329.654-.395.456-.08.732.036.894.174l-.207-1.496s-.146-.522-.896-.392c-.648.113-.587.587-.587.587l.142 1.522z"></path>
+  </svg>
+
+  <canvas id="trees"></canvas>
+   
+  <svg id="name" width="100%" height="30%" style="position:absolute; left: 20%; bottom: 20%">
+    <path id="my_path" d="M 20,220 C 280,160 500,140 820,120" fill="transparent"></path>
+    <text stroke="white" stroke-width="3" fill="#e33" style="dominant-baseline: hanging; font: 120px sans-serif;" lengthadjust="spacingAndGlyphs" textlength="50%"> 
+      <animate attributeName="stroke-width" values="1;6;1" dur="5s" repeatCount="indefinite"></animate>
+      <textPath xmlns:xlink="http://www.w3.org/1999/xlink" href="#my_path">
+        Toronto JS
+      </textPath>
+    </text>
+  </svg>
+
+  <canvas id="snow"></canvas>
+
+  <script>
+    let el = document.getElementById.bind(document)
+    let w = window.innerWidth
+    let h = window.innerHeight
+
+    function prep_canvas(str) {
+      let can = el(str)
+      can.style = "position: absolute; top: 0px; left: 0px;"
+      let ctx = can.getContext('2d')
+      can.width = w
+      can.height = h
+      return {can: can, ctx: ctx}
+    }
+
+    let snow = prep_canvas('snow')
+    snow.ctx.fillStyle = "#000"
+    snow.ctx.fillRect(0, 0, w, h)
+
+    let rand = n => Math.floor(Math.random() * n)
+    let pix = (data, x, y) => data[4 * w * (y | 0) + 4 * (x | 0)]
+
+    let snobjects = Array(400).fill(0).map(_ => ({
+      size: rand(10) + 2,
+      x: rand(w),
+      y: -20,
+      dy: Math.random(),
+      delay: rand(800),
+      ff: false,
+      render() {
+        snow.ctx.fillStyle = "#fff"
+        snow.ctx.font = `${this.size * 2}px serif`
+        snow.ctx.fillText("❄️", this.x, this.y)
+      },
+      step() {
+        if(this.delay > 0) return --this.delay
+        if(this.ff) {
+          this.ff = false
+          this.y = -20
+        }
+        if(this.y > h ||
+          (pix(tree_data, this.x, this.y)
+            && rand(30) < 1)) {
+          this.delay = 100 + rand(100)
+          this.ff = true
+        }
+        this.y += (13 - this.size) / 6 + this.dy
+        this.x += Math.random() - 0.5
+      }
+    }))
+
+    function make_it_snow(t) {
+      // snow.ctx.fillStyle = "#000"
+      // snow.ctx.fillRect(0, 0, w, h)
+      snow.ctx.clearRect(0, 0, w, h)
+      snobjects.forEach(s => {
+        s.step()
+        s.render()
+      })
+    }
+
+    // trees
+    let trees = prep_canvas('trees')
+
+    // hills
+    let hill1 = x => h * 7 / 8
+    let hill2 = x => h * 15 / 16 + h / 50 * Math.cos(x / 200)
+
+    function draw_trees(hill, p, size, bg) {
+      let draw_me = []
+      for(x = 0; x < w; x++) {
+        trees.ctx.fillStyle = bg
+        trees.ctx.fillRect(x, hill(x), 1, h - hill(x))
+        if(rand(100) < p)
+          draw_me.push([x, hill(x)])
+      }
+
+      draw_me.forEach(([x, y]) => {
+        trees.ctx.font = `${size + rand(30)*size/100}px serif`
+        trees.ctx.fillText(rand(100) < 50 ? "🎄" : "🌲", x-10, y + rand(h - y))
+      })
+    }
+
+    // text
+    trees.ctx.fillStyle = "#eee"
+    trees.ctx.font = `200px cursive`
+    trees.ctx.fillText("Happy Holidays!", w * 1 / 16, h * 2 / 6, w * 7 / 8)
+
+    // svg tower
+    let tower = el('tower')
+    tower.height.baseVal.value = h * 1/3
+    tower.width.baseVal.value = h * 1/3
+    let dataurl = "data:image/svg+xml;charset=utf-8," + encodeURIComponent(tower.outerHTML)
+    let img = new Image()
+    img.src = dataurl
+
+    // draw the trees in front of the tower
+    let tree_data = []
+    img.onload = function () {
+      trees.ctx.drawImage(img, w * 1/8, h * 7/8 - img.height)
+   
+      draw_trees(hill1, 70, 30, "#cdc")
+      draw_trees(hill2, 3, 130, "#efe")
+
+      tree_data = trees.ctx.getImageData(0, 0, w, h).data
+    }
+
+    // let's go
+    let t = 0
+    function go() {
+      t++
+      make_it_snow(t)
+      window.requestAnimationFrame(go)
+    }
+
+    go()
+
+  </script>
+</body>
+</html>
